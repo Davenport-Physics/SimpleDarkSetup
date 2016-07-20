@@ -25,6 +25,7 @@
 import subprocess as sp
 import os
 import urllib
+import tarfile
 	
 """
 
@@ -73,9 +74,13 @@ def DownloadFileFromUrl(DownloadObj, Directory):
 	
 def ExtractTarBall(TarBallFile, Directory):
 	
-	ReducedTarBallFile = TarBallFile.replace("tar.gz", "")
-	MakeSubprocessCall("tar -xvzf " + Directory + "/" + TarBallFile + 
-						" " + Directory + "/" + ReducedTarBallFile)
+	print("Extracting " + TarBallFile)
+	
+	tar = tarfile.open(Directory + "/" + TarBallFile, "r:gz")
+	tar.extractall(Directory)
+	tar.close()
+	
+	print("Done extracting " + TarBallFile)
 	
 
 """
@@ -88,7 +93,9 @@ def ExtractTarBall(TarBallFile, Directory):
 
 def ExtractZip(ZipFile, Directory):
 	
-	MakeSubprocessCall("unzip " + Directory + "/" + ZipFile)
+	print("Extracting " + ZipFile)
+	MakeSubprocessCall("unzip " + Directory + "/" + ZipFile + " -d " + Directory)
+	print("Done extracting " + ZipFile)
 	
 	
 def GetCurrentLocalDirectory():
@@ -138,6 +145,20 @@ class DownloableFiles(object):
 	def GetFile(self):
 		
 		return self.File
+		
+		
+def ArchivedFiles(DownloableFiles):
+	
+	def __init__(self, ProgramName = "", Url = "", File = "", ArchiveDirectory = ""):
+		
+		self.ProgramName = ProgramName
+		self.Url = Url
+		self.File = File
+		self.ArchiveDirectory = ArchiveDirectory
+		
+	def GetArchiveDirectory(self):
+		
+		return self.ArchiveDirectory
 		
 		
 class Directories(object):

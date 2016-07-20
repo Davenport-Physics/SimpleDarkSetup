@@ -40,18 +40,58 @@ def InitialSetupBlock(WorkingDirectoryString):
 	
 	WorkingDirectory = Directories(WorkingDirectoryString)
 	UserDirectory = Directories(GetUserHomeDirectoryString(GetCurrentLocalDirectory()))
-	
-	WorkingDirectory.MakeDirectory()
-	
 	DownloadObjList = ReadLinksFile_And_GetFileObjectsList()
 	
-	for i in DownloadObjList:
-		DownloadFileFromUrl(i, WorkingDirectory.GetDirectory())
-	
+	ReadCacheFile()
+	WorkingDirectory.MakeDirectory()
+	#DownloadNecessaryFiles(DownloadObjList)
+	ExtractNecessaryFiles(DownloadObjList)
 	
 	if CheckIfBashrcHasTagsAlready() == False:
 		AddExportToBashrc()
 	
+	
+	
+def DownloadNecessaryFiles(DownloadObjList):
+	
+	global WorkingDirectory
+	
+	for i in DownloadObjList:
+		DownloadFileFromUrl(i, WorkingDirectory.GetDirectory())	
+
+def ExtractNecessaryFiles(DownloadObjList):
+	
+	global WorkingDirectory
+	
+	for i in DownloadObjList:
+		if ".tar.gz" in i.GetFile():
+			print("")
+			ExtractTarBall(i.GetFile(), WorkingDirectory.GetDirectory())
+		elif ".zip" in i.GetFile():
+			ExtractZip(i.GetFile(), WorkingDirectory.GetDirectory())
+		else:
+			print("Unknown archive extension")
+	
+"""
+
+	ReadCacheFile
+	
+	TODO
+	
+	Implement file structure to read steps currently taken with 
+	SimpleDarkSetup
+
+"""
+
+def ReadCacheFile():
+	
+	global WorkingDirectory
+	
+	#fp = open(WorkingDirectory.GetDirectory() + "/.darksectorcache", "r")
+	
+	print("ReadCacheFile STUB")
+	
+	#fp.close()
 
 """
 
