@@ -24,35 +24,7 @@
 
 import subprocess as sp
 import os
-import urllib.request
-
-"""
-
-	MakeDirectory
-	
-	Receives a string variable which ought to be the name of a directory.
-	If the length of the Directory is zero, i.e it doesn't have any usable
-	data, then an error would have occurred and no directory would be made.
-	
-	On the otherhand, if len(directory) > 0, it will attempt to make a
-	directory. If a directory cannot be made, it probably already exists.
-	
-	Returns nothing
-
-"""
-def MakeDirectory(Directory = ""):
-	
-	#Stat if directory exists. May not be necessary?
-	
-	#May want to return error code?
-	if len(Directory) == 0:
-		print("Error: MakeDirectory called with no directory name")
-		return
-	
-	try:
-		os.mkdir(Directory)
-	except OSError:
-		print("Directory %s already exists." % (Directory))
+import urllib
 	
 """
 
@@ -75,15 +47,25 @@ def MakeSubprocessCall(command):
 	
 """
 
+	TODO
+
 	https://docs.python.org/3/library/urllib.html
+	
 
 """
 	
 def DownloadFileFromUrl(DownloadObj, Directory):
 	
-	print("DownloadFileFromUrl STUB")
+	SubProcessCommand = "wget -O " + Directory + "/" + DownloadObj.GetFile()
+	SubProcessCommand += " " + DownloadObj.GetUrl()
+	
+	MakeSubprocessCall(SubProcessCommand)
+	
+	
 	
 """
+	
+	TODO
 
 	https://docs.python.org/3.5/library/tarfile.html
 
@@ -92,32 +74,105 @@ def DownloadFileFromUrl(DownloadObj, Directory):
 def ExtractTarBall(TarBallFile, Directory):
 	
 	ReducedTarBallFile = TarBallFile.replace("tar.gz", "")
-	MakeSubprocessCall("tar -xvzf " + TarBallFile + " " ReducedTarBallFile)
+	MakeSubprocessCall("tar -xvzf " + Directory + "/" + TarBallFile + 
+						" " + Directory + "/" + ReducedTarBallFile)
+	
+
+"""
+
+	TODO
+	
+	https://docs.python.org/2/library/zipfile.html
+
+"""	
+
+def ExtractZip(ZipFile, Directory):
+	
+	MakeSubprocessCall("unzip " + Directory + "/" + ZipFile)
+	
+	
+def GetCurrentLocalDirectory():
+	
+	return MakeSubprocessCall("pwd")
+	
+	
+def GetUserHomeDirectoryString(string):
+	
+	if len(string) == 0:
+		return
+		
+	tempstring = None
+	
+	if string[0] == 'b':
+		string = string[1:-1]
+	
+	tempstring = string.replace("\n","")
+	tempstring = tempstring.replace("'", "")
+		
+	DelimitedList = tempstring.split("/")
+	return "/" + DelimitedList[1] + "/" + DelimitedList[2]
 	
 
 class DownloableFiles(object):
 	
-	def __init__(self, ProgramName = "", Link = "", File = ""):
+	def __init__(self, ProgramName = "", Url = "", File = ""):
 		
 		self.ProgramName = ProgramName
-		self.Link = Link
+		self.Url = Url
 		self.File = File
 		
 	def PrintObjContents(self):
 		
 		print("ProgramName = %s" % (self.ProgramName))
-		print("Link = %s" % (self.Link))
+		print("Url = %s" % (self.Url))
 		print("File = %s\n" % (self.File))
 		
 	def GetProgramName(self):
 		
 		return self.ProgramName
 		
-	def GetFileLink(self):
+	def GetUrl(self):
 		
-		return self.Link
+		return self.Url
 		
 	def GetFile(self):
 		
 		return self.File
+		
+		
+class Directories(object):
+	
+	def __init__(self, Directory = ""):
+		
+		self.Directory = Directory
+		
+		
+	"""
+
+	MakeDirectory
+	
+	Receives a string variable which ought to be the name of a directory.
+	If the length of the Directory is zero, i.e it doesn't have any usable
+	data, then an error would have occurred and no directory would be made.
+	
+	On the otherhand, if len(directory) > 0, it will attempt to make a
+	directory. If a directory cannot be made, it probably already exists.
+	
+	Returns nothing
+
+	"""
+
+	def MakeDirectory(self):
+		
+		if len(self.Directory) == 0:
+			print("Error: MakeDirectory called with no directory name")
+			return
+		try:
+			os.mkdir(self.Directory)
+		except OSError:
+			print("Directory %s already exists." % (self.Directory))
+		
+	def GetDirectory(self):
+		
+		return self.Directory
 		

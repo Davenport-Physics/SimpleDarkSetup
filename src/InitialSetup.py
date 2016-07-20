@@ -22,14 +22,35 @@
 #  
 #
 
-from Common import *
+import sys
 
+try:
+	from Common import *
+except ImportError:
+	sys.path.insert(0, "DarkSectorCodeData.zip")
+	from Common import *
 	
-def InitialSetupBlock(WorkingDirectory):
+UserDirectory = None
+WorkingDirectory = None
 	
-	MakeDirectory(WorkingDirectory)
+def InitialSetupBlock(WorkingDirectoryString):
+	
+	global WorkingDirectory
+	global UserDirectory
+	
+	WorkingDirectory = Directories(WorkingDirectoryString)
+	UserDirectory = Directories(GetUserHomeDirectoryString(GetCurrentLocalDirectory()))
+	
+	WorkingDirectory.MakeDirectory()
+	
 	DownloadObjList = ReadLinksFile_And_GetFileObjectsList()
-	CheckContentsOfDownloadObjList(DownloadObjList)
+	
+	for i in DownloadObjList:
+		DownloadFileFromUrl(i, WorkingDirectory.GetDirectory())
+	
+	
+	if CheckIfBashrcHasTagsAlready() == False:
+		AddExportToBashrc()
 	
 
 """
@@ -48,7 +69,6 @@ def ReadLinksFile_And_GetFileObjectsList():
 	fp = open("Links", "r")
 	StringList = []
 	for line in fp:
-		print("%s" % (line))
 		StringList.append(line)
 		
 	fp.close()
@@ -91,7 +111,7 @@ def MakeDownloadableFileObjectList(StringList):
 			
 			try:
 				
-				obj = DownloableFiles(ProgramName=temp[0], Link=temp[1], File=temp[2])
+				obj = DownloableFiles(ProgramName=temp[0], Url=temp[1], File=temp[2])
 				DownloableFilesObjectList.append(obj)
 				
 			except TypeError:
@@ -126,3 +146,48 @@ def CheckContentsOfDownloadObjList(DownloadObjList):
 	
 	for i in range(len(DownloadObjList)):
 		DownloadObjList[i].PrintObjContents()
+
+
+"""
+
+	CheckIfBashrcHasTagsAlready
+	
+	Determines whether the .bashrc file in the home directory of the user
+	has already been altered to have the appropriate export variables
+	
+	returns a boolean
+
+"""
+
+def CheckIfBashrcHasTagsAlready():
+	
+	fp = open( UserDirectory.GetDirectory() + "/.bashrc", "r" )
+	
+	print("CheckIfBashrcHasTagsAlready STUB")
+	
+	fp.close()
+	
+	return True
+
+"""
+
+	AddExportToBashrc
+	
+	*Should be called after files have been downloaded and extracted
+	
+	Returns nothing
+
+"""
+def AddExportToBashrc():
+	
+	global UserDirectory
+	
+	if CheckIfBashrcHasTagsAlready() == True:
+		return
+		
+	fp = open( UserDirectory.GetDirectory() + "/.bashrc", "a")
+	
+	print("AddExportToBashrc STUB")
+	
+	fp.close()
+	

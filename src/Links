@@ -1,0 +1,12 @@
+root-5.x-bin
+https://root.cern.ch/download/root_v5.34.36.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+root_v5.34.36.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+
+root-6.x-bin
+https://root.cern.ch/download/root_v6.06.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+root_v6.06.06.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+
+larlite
+https://github.com/larlight/larlite/archive/trunk.zip
+larlite-trunk.zip
+

@@ -22,10 +22,16 @@
 #  
 #  
 
-from InitialSetup import InitialSetupBlock
-from Common import *
-
-WorkingDirectory = "DarkSectorCode"
+import sys
+try:
+	from InitialSetup import InitialSetupBlock
+	from Common import *
+except ImportError:
+	sys.path.insert(0, "DarkSectorCodeData.zip")
+	from InitialSetup import InitialSetupBlock
+	from Common import *
+	
+WorkingDirectoryString = "DarkSectorCode"
 
 def main(args):
 	
@@ -34,7 +40,8 @@ def main(args):
 	if len(args) > 1:
 		HandleArguments(args)
 	
-	InitialSetupBlock(WorkingDirectory)
+	GetCurrentLocalDirectory()
+	InitialSetupBlock(WorkingDirectoryString)
 	
 	return 0
 
@@ -43,7 +50,7 @@ def main(args):
 	HandleArguments
 	
 	Recieves a list of string arguments. It parses the commands and
-	alters any data specified by the commands. This function is always
+	alters any data specified by the commands. This function is usually
 	called first.
 	
 	Returns nothing
