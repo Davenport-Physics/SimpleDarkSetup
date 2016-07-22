@@ -24,8 +24,10 @@
 
 import subprocess as sp
 import os
+import os.path
 import urllib
 import tarfile
+import hashlib
 	
 """
 
@@ -63,7 +65,76 @@ def DownloadFileFromUrl(DownloadObj, Directory):
 	MakeSubprocessCall(SubProcessCommand)
 	
 	
+"""
+
+	CheckIfFileAlreadyDownloaded
 	
+	TODO
+	
+	Finish Comments
+
+"""
+def CheckIfFileAlreadyDownloaded(DownloadObj, Directory):
+	
+	if CheckIfFileExists(DownloadObj.GetFile(), Directory) == False:
+		return False
+	
+	"""
+	
+		If not provided a Hash, the file should be redownloaded. This
+		is the case for zip files downloaded from github, whose hash
+		may change constantly.
+	
+	"""
+	if len(DownloadObj.GetHash()) == 0:
+		return False
+
+	LocalFileHash = GetLocalHash(DownloadObj, Directory)		
+	return CheckSHA256Hash(LocalFileHash, DownloadObj.GetHash())
+	
+	
+def CheckIfFileExists(File, Directory):
+	
+	TempFile = Directory + "/" + File
+	
+	return os.path.exists(TempFile)
+	
+def CheckSHA256Hash(CurrentHash, RealHash):
+	
+	print("CheckSHA256Hash STUB")
+	
+	if CurrentHash == RealHash:
+		return True
+	
+	return False
+
+"""
+
+	GetLocalHash
+	
+	TODO
+
+"""	
+
+def GetLocalHash(DownloadObj, Directory):
+	
+	print("GetLocalHash STUB")
+	
+	Hash = hashlib.sha256()
+	
+	try:
+		fp = open(Directory + "/" + DownloadObj.GetFile())
+		for chunk in iter( lambda: fp.read(4096), b"" ):
+			Hash.update(chunk)
+		fp.close()
+	except FileNotFoundError:
+		print("GetLocalHash FileNotFoundError")
+		return ""
+		
+		
+	return Hash.hexdigest()
+	
+
 """
 	
 	TODO
@@ -87,6 +158,8 @@ def ExtractTarBall(TarBallFile, Directory):
 
 	TODO
 	
+	Implement using Python Libs
+	
 	https://docs.python.org/2/library/zipfile.html
 
 """	
@@ -96,8 +169,13 @@ def ExtractZip(ZipFile, Directory):
 	print("Extracting " + ZipFile)
 	MakeSubprocessCall("unzip " + Directory + "/" + ZipFile + " -d " + Directory)
 	print("Done extracting " + ZipFile)
+
 	
-	
+"""
+
+	GetCurrentLocalDirectory
+
+"""
 def GetCurrentLocalDirectory():
 	
 	return MakeSubprocessCall("pwd")
@@ -122,11 +200,13 @@ def GetUserHomeDirectoryString(string):
 
 class DownloableFiles(object):
 	
-	def __init__(self, ProgramName = "", Url = "", File = ""):
+	def __init__(self, ProgramName = "", Url = "", File = "", Hash = "", RenameFile = False):
 		
 		self.ProgramName = ProgramName
 		self.Url = Url
 		self.File = File
+		self.Hash = Hash
+		self.RenameFile = RenameFile
 		
 	def PrintObjContents(self):
 		
@@ -146,14 +226,24 @@ class DownloableFiles(object):
 		
 		return self.File
 		
+	def GetHash(self):
 		
-def ArchivedFiles(DownloableFiles):
+		return self.Hash
+		
+	def GetRenameFileBool(self):
+		
+		return self.RenameFile
+		
+		
+class ArchivedFiles(DownloableFiles):
 	
-	def __init__(self, ProgramName = "", Url = "", File = "", ArchiveDirectory = ""):
+	def __init__(self, ProgramName = "", Url = "", File = "", Hash = "", ArchiveDirectory = "", RenameFile = False):
 		
 		self.ProgramName = ProgramName
-		self.Url = Url
+		self.Url  = Url
 		self.File = File
+		self.Hash = Hash
+		self.RenameFile = RenameFile
 		self.ArchiveDirectory = ArchiveDirectory
 		
 	def GetArchiveDirectory(self):

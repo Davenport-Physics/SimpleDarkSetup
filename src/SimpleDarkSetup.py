@@ -40,7 +40,6 @@ def main(args):
 	if len(args) > 1:
 		HandleArguments(args)
 	
-	GetCurrentLocalDirectory()
 	InitialSetupBlock(WorkingDirectoryString)
 	
 	return 0

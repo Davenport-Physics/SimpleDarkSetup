@@ -30,42 +30,73 @@ except ImportError:
 	sys.path.insert(0, "DarkSectorCodeData.zip")
 	from Common import *
 	
+"""
+
+LocalDirectory is a Directories object. It stores the directory the program
+is currently being ran from.
+
+UserDirectory is a Directories object. It stores the user's home directory.
+i.e /home/eld
+
+WorkingDirectory is a Directories object. It stores the directory that
+will contain all of the software.
+
+"""
+LocalDirectory = None
 UserDirectory = None
 WorkingDirectory = None
 	
+	
+"""
+
+	InitialSetupBlock
+
+"""
 def InitialSetupBlock(WorkingDirectoryString):
 	
 	global WorkingDirectory
 	global UserDirectory
 	
 	WorkingDirectory = Directories(WorkingDirectoryString)
-	UserDirectory = Directories(GetUserHomeDirectoryString(GetCurrentLocalDirectory()))
+	LocalDirectory = Directories(GetCurrentLocalDirectory())
+	UserDirectory = Directories(GetUserHomeDirectoryString(LocalDirectory.GetDirectory()))
 	DownloadObjList = ReadLinksFile_And_GetFileObjectsList()
 	
 	ReadCacheFile()
 	WorkingDirectory.MakeDirectory()
-	#DownloadNecessaryFiles(DownloadObjList)
+	DownloadNecessaryFiles(DownloadObjList)
 	ExtractNecessaryFiles(DownloadObjList)
 	
 	if CheckIfBashrcHasTagsAlready() == False:
 		AddExportToBashrc()
 	
 	
+"""
+
+	DownloadNecessaryFiles
+
+"""
 	
 def DownloadNecessaryFiles(DownloadObjList):
 	
 	global WorkingDirectory
 	
-	for i in DownloadObjList:
-		DownloadFileFromUrl(i, WorkingDirectory.GetDirectory())	
+	for obj in DownloadObjList:
+		if CheckIfFileAlreadyDownloaded(obj, WorkingDirectory.GetDirectory()) == False:
+			DownloadFileFromUrl(obj, WorkingDirectory.GetDirectory())
+		
 
+"""
+
+	ExtractNecessaryFiles
+
+"""
 def ExtractNecessaryFiles(DownloadObjList):
 	
 	global WorkingDirectory
 	
 	for i in DownloadObjList:
 		if ".tar.gz" in i.GetFile():
-			print("")
 			ExtractTarBall(i.GetFile(), WorkingDirectory.GetDirectory())
 		elif ".zip" in i.GetFile():
 			ExtractZip(i.GetFile(), WorkingDirectory.GetDirectory())
@@ -86,12 +117,21 @@ def ExtractNecessaryFiles(DownloadObjList):
 def ReadCacheFile():
 	
 	global WorkingDirectory
-	
-	#fp = open(WorkingDirectory.GetDirectory() + "/.darksectorcache", "r")
+	fp = None
 	
 	print("ReadCacheFile STUB")
 	
-	#fp.close()
+	DarkSectorCacheString = WorkingDirectory.GetDirectory() + "/.darksectorcache"
+	
+	try:
+		fp = open(DarkSectorCacheString, "r")
+		#...
+		fp.close()
+	except FileNotFoundError:
+		pass
+		#fp = open(DarkSectorCacheString, "w")
+		#...
+		#fp.close()
 
 """
 
@@ -201,11 +241,14 @@ def CheckContentsOfDownloadObjList(DownloadObjList):
 
 def CheckIfBashrcHasTagsAlready():
 	
-	fp = open( UserDirectory.GetDirectory() + "/.bashrc", "r" )
-	
 	print("CheckIfBashrcHasTagsAlready STUB")
 	
-	fp.close()
+	try:
+		fp = open( UserDirectory.GetDirectory() + "/.bashrc", "r" )
+		#...
+		fp.close()
+	except FileNotFoundError:
+		print(".bashrc does not seem to exist")
 	
 	return True
 
