@@ -59,7 +59,8 @@ def InitialSetupBlock(WorkingDirectoryString):
 	
 	WorkingDirectory = Directories(WorkingDirectoryString)
 	LocalDirectory = Directories(GetCurrentLocalDirectory())
-	UserDirectory = Directories(GetUserHomeDirectoryString(LocalDirectory.GetDirectory()))
+	UserDirectory = Directories(GetUserHomeDirectoryString(
+		LocalDirectory.GetDirectory()))
 	DownloadObjList = ReadLinksFile_And_GetFileObjectsList()
 	
 	ReadCacheFile()
@@ -67,7 +68,7 @@ def InitialSetupBlock(WorkingDirectoryString):
 	DownloadNecessaryFiles(DownloadObjList)
 	ExtractNecessaryFiles(DownloadObjList)
 	
-	if CheckIfBashrcHasTagsAlready() == False:
+	if CheckIfBashrcHasTagsAlready() is False:
 		AddExportToBashrc()
 	
 	
@@ -82,7 +83,8 @@ def DownloadNecessaryFiles(DownloadObjList):
 	global WorkingDirectory
 	
 	for obj in DownloadObjList:
-		if CheckIfFileAlreadyDownloaded(obj, WorkingDirectory.GetDirectory()) == False:
+		if CheckIfFileAlreadyDownloaded(obj, WorkingDirectory.GetDirectory()) is False:
+			print("")
 			DownloadFileFromUrl(obj, WorkingDirectory.GetDirectory())
 		
 
@@ -97,9 +99,9 @@ def ExtractNecessaryFiles(DownloadObjList):
 	
 	for i in DownloadObjList:
 		if ".tar.gz" in i.GetFile():
-			ExtractTarBall(i.GetFile(), WorkingDirectory.GetDirectory())
+			ExtractTarBall(i, WorkingDirectory.GetDirectory())
 		elif ".zip" in i.GetFile():
-			ExtractZip(i.GetFile(), WorkingDirectory.GetDirectory())
+			ExtractZip(i, WorkingDirectory.GetDirectory())
 		else:
 			print("Unknown archive extension")
 	
@@ -153,7 +155,7 @@ def ReadLinksFile_And_GetFileObjectsList():
 		
 	fp.close()
 	
-	return MakeDownloadableFileObjectList(StringList)
+	return MakeArchiveFileObjectList(StringList)
 
 """
 
@@ -187,7 +189,7 @@ def MakeDownloadableFileObjectList(StringList):
 	temp = []
 	counter = 0
 	for i in range(0, x):
-		if counter != 0 and counter%3 == 0:
+		if counter != 0 and counter % 3 == 0:
 			
 			try:
 				
@@ -204,12 +206,58 @@ def MakeDownloadableFileObjectList(StringList):
 			
 		else:
 			
-			StringList[i] = StringList[i].replace("\n","")
+			StringList[i] = StringList[i].replace("\n", "")
 			temp.append(StringList[i])
 			counter += 1
 		
 	return DownloableFilesObjectList
 	
+def MakeArchiveFileObjectList(StringList):
+	
+	DownloableFilesObjectList = []
+	
+	ProgramName = ""
+	Url = ""
+	File = ""
+	Hash = ""
+	ArchiveDirecctory = ""
+	RenameFile = False
+	
+	StartBraceFound = False
+	for line in StringList:
+		if "{" in line:
+			if StartBraceFound is True:
+				print("Error. Found too many start braces in Links file.")
+				sys.exit(0)
+			else:
+				StartBraceFound = True
+		if "Program" in line:
+			ProgramName = SplitLineAndGetIndexI(line, 1)
+		elif "URL" in line:
+			Url = SplitLineAndGetIndexI(line, 1)
+		elif "DownloadFile" in line:
+			File = SplitLineAndGetIndexI(line, 1)
+		elif "SHA256HASH" in line:
+			Hash = SplitLineAndGetIndexI(line, 1)
+		elif "ReplaceExtractedArchive" in line:
+			RenameFile = ConvertStrToBool(SplitLineAndGetIndexI(line, 1))
+		elif "ExtractedArchive" in line:
+			ArchiveDirectory = SplitLineAndGetIndexI(line, 1)
+		elif "}" in line:
+			DownloableFilesObjectList.append(ArchivedFiles(
+				ProgramName=ProgramName,Url=Url, File=File,
+				Hash=Hash, ArchiveDirectory=ArchiveDirectory,
+				RenameFile=RenameFile))
+			
+			ProgramName = ""
+			Url = ""
+			File = ""
+			Hash = ""
+			ArchiveDirectory = ""
+			RenameFile = False
+			StartBraceFound = False
+			
+	return DownloableFilesObjectList
 
 """
 
@@ -244,7 +292,7 @@ def CheckIfBashrcHasTagsAlready():
 	print("CheckIfBashrcHasTagsAlready STUB")
 	
 	try:
-		fp = open( UserDirectory.GetDirectory() + "/.bashrc", "r" )
+		fp = open(UserDirectory.GetDirectory() + "/.bashrc", "r")
 		#...
 		fp.close()
 	except FileNotFoundError:
@@ -265,12 +313,9 @@ def AddExportToBashrc():
 	
 	global UserDirectory
 	
-	if CheckIfBashrcHasTagsAlready() == True:
+	if CheckIfBashrcHasTagsAlready() is True:
 		return
 		
-	fp = open( UserDirectory.GetDirectory() + "/.bashrc", "a")
-	
+	fp = open(UserDirectory.GetDirectory() + "/.bashrc", "a")
 	print("AddExportToBashrc STUB")
-	
 	fp.close()
-	

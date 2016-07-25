@@ -76,7 +76,7 @@ def DownloadFileFromUrl(DownloadObj, Directory):
 """
 def CheckIfFileAlreadyDownloaded(DownloadObj, Directory):
 	
-	if CheckIfFileExists(DownloadObj.GetFile(), Directory) == False:
+	if CheckIfFileExists(DownloadObj.GetFile(), Directory) is False:
 		return False
 	
 	"""
@@ -86,10 +86,11 @@ def CheckIfFileAlreadyDownloaded(DownloadObj, Directory):
 		may change constantly.
 	
 	"""
+	LocalFileHash = GetLocalHash(DownloadObj, Directory)
+	print(LocalFileHash)
 	if len(DownloadObj.GetHash()) == 0:
 		return False
-
-	LocalFileHash = GetLocalHash(DownloadObj, Directory)		
+				
 	return CheckSHA256Hash(LocalFileHash, DownloadObj.GetHash())
 	
 	
@@ -122,37 +123,29 @@ def GetLocalHash(DownloadObj, Directory):
 	
 	Hash = hashlib.sha256()
 	
-	try:
-		fp = open(Directory + "/" + DownloadObj.GetFile())
-		for chunk in iter( lambda: fp.read(4096), b"" ):
-			Hash.update(chunk)
-		fp.close()
-	except FileNotFoundError:
-		print("GetLocalHash FileNotFoundError")
-		return ""
-		
+	with open(Directory + "/" + DownloadObj.GetFile(), "rb") as fp:
+		Hash.update(fp.read(4096))	
 		
 	return Hash.hexdigest()
 	
 
 """
 	
-	TODO
-
-	https://docs.python.org/3.5/library/tarfile.html
+	ExtractTarBall
 
 """
 	
-def ExtractTarBall(TarBallFile, Directory):
+def ExtractTarBall(obj, Directory):
 	
-	print("Extracting " + TarBallFile)
+	print("Extracting " + obj.GetFile())
 	
-	tar = tarfile.open(Directory + "/" + TarBallFile, "r:gz")
+	tar = tarfile.open(Directory + "/" + obj.GetFile(), "r:gz")
 	tar.extractall(Directory)
 	tar.close()
 	
-	print("Done extracting " + TarBallFile)
-	
+	print("Done extracting " + obj.GetFile())
+		
+	RenameDirectory(obj, Directory)
 
 """
 
@@ -164,12 +157,21 @@ def ExtractTarBall(TarBallFile, Directory):
 
 """	
 
-def ExtractZip(ZipFile, Directory):
+def ExtractZip(obj, Directory):
 	
-	print("Extracting " + ZipFile)
-	MakeSubprocessCall("unzip " + Directory + "/" + ZipFile + " -d " + Directory)
-	print("Done extracting " + ZipFile)
+	print("Extracting " + obj.GetFile())
+	MakeSubprocessCall("unzip " + Directory + "/" + obj.GetFile() + " -d " + Directory)
+	print("Done extracting " + obj.GetFile())
+	
+	RenameDirectory(obj, Directory)
 
+def RenameDirectory(ArchiveObj, Directory):
+	
+	if ArchiveObj.GetRenameFileBool() is True:
+		print("Renaming Extracted directory")
+		os.rename(Directory + "/" + ArchiveObj.GetArchiveDirectory(), 
+			Directory + "/" + ArchiveObj.GetProgramName())
+		print("Done")
 	
 """
 
@@ -191,16 +193,29 @@ def GetUserHomeDirectoryString(string):
 	if string[0] == 'b':
 		string = string[1:-1]
 	
-	tempstring = string.replace("\n","")
+	tempstring = string.replace("\n", "")
 	tempstring = tempstring.replace("'", "")
 		
 	DelimitedList = tempstring.split("/")
 	return "/" + DelimitedList[1] + "/" + DelimitedList[2]
 	
+	
+def SplitLineAndGetIndexI(line, i):
+	
+	temp = line.split("=")
+	return temp[i].replace("\n","")
+	
+	
+def ConvertStrToBool(string):
+	
+	if string == "True":
+		return True
+	else:
+		return False
 
 class DownloableFiles(object):
 	
-	def __init__(self, ProgramName = "", Url = "", File = "", Hash = "", RenameFile = False):
+	def __init__(self, ProgramName="", Url="", File="", Hash="", RenameFile=False):
 		
 		self.ProgramName = ProgramName
 		self.Url = Url
@@ -237,7 +252,7 @@ class DownloableFiles(object):
 		
 class ArchivedFiles(DownloableFiles):
 	
-	def __init__(self, ProgramName = "", Url = "", File = "", Hash = "", ArchiveDirectory = "", RenameFile = False):
+	def __init__(self, ProgramName="", Url="", File="", Hash="", ArchiveDirectory="", RenameFile=False):
 		
 		self.ProgramName = ProgramName
 		self.Url  = Url
@@ -253,7 +268,7 @@ class ArchivedFiles(DownloableFiles):
 		
 class Directories(object):
 	
-	def __init__(self, Directory = ""):
+	def __init__(self, Directory=""):
 		
 		self.Directory = Directory
 		
