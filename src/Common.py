@@ -45,7 +45,7 @@ import hashlib
 """
 def MakeSubprocessCall(command):
 	
-	return str(sp.check_output(command, shell = True))
+	return str(sp.check_output(command, shell=True))
 	
 	
 """
@@ -170,7 +170,7 @@ def RenameDirectory(ArchiveObj, Directory):
 	if ArchiveObj.GetRenameFileBool() is True:
 		print("Renaming Extracted directory")
 		os.rename(Directory + "/" + ArchiveObj.GetArchiveDirectory(), 
-			Directory + "/" + ArchiveObj.GetProgramName())
+						Directory + "/" + ArchiveObj.GetProgramName())
 		print("Done")
 	
 """
@@ -203,7 +203,7 @@ def GetUserHomeDirectoryString(string):
 def SplitLineAndGetIndexI(line, i):
 	
 	temp = line.split("=")
-	return temp[i].replace("\n","")
+	return temp[i].replace("\n", "")
 	
 	
 def ConvertStrToBool(string):
@@ -212,6 +212,18 @@ def ConvertStrToBool(string):
 		return True
 	else:
 		return False
+		
+		
+def CheckIfSimilarFileExists(Program, Directory):
+	
+	if len(Program) == 0:
+		return ""
+	
+	for File in os.listdir(Directory):
+		if Program in File:
+			return File
+			
+	return ""
 
 class DownloableFiles(object):
 	
@@ -252,18 +264,25 @@ class DownloableFiles(object):
 		
 class ArchivedFiles(DownloableFiles):
 	
-	def __init__(self, ProgramName="", Url="", File="", Hash="", ArchiveDirectory="", RenameFile=False):
+	def __init__(self, ProgramName="", Url="", File="", Hash="",
+						ArchiveDirectory="", RenameFile=False, 
+						CheckIfUserDownloadedProgram=False):
 		
 		self.ProgramName = ProgramName
-		self.Url  = Url
+		self.Url = Url
 		self.File = File
 		self.Hash = Hash
-		self.RenameFile = RenameFile
 		self.ArchiveDirectory = ArchiveDirectory
+		self.RenameFile = RenameFile
+		self.CheckIfUserDownloadedProgram = CheckIfUserDownloadedProgram
 		
 	def GetArchiveDirectory(self):
 		
 		return self.ArchiveDirectory
+		
+	def GetIfUserDownloadedProgram(self):
+		
+		return self.CheckIfUserDownloadedProgram
 		
 		
 class Directories(object):

@@ -23,6 +23,7 @@
 #
 
 import sys
+import pdb
 
 try:
 	from Common import *
@@ -86,7 +87,6 @@ def DownloadNecessaryFiles(DownloadObjList):
 		if CheckIfFileAlreadyDownloaded(obj, WorkingDirectory.GetDirectory()) is False:
 			print("")
 			DownloadFileFromUrl(obj, WorkingDirectory.GetDirectory())
-		
 
 """
 
@@ -214,6 +214,8 @@ def MakeDownloadableFileObjectList(StringList):
 	
 def MakeArchiveFileObjectList(StringList):
 	
+	global WorkingDirectory
+	
 	DownloableFilesObjectList = []
 	
 	ProgramName = ""
@@ -221,6 +223,7 @@ def MakeArchiveFileObjectList(StringList):
 	File = ""
 	Hash = ""
 	ArchiveDirecctory = ""
+	CheckIfUserDownloadedProgram = False
 	RenameFile = False
 	
 	StartBraceFound = False
@@ -231,7 +234,30 @@ def MakeArchiveFileObjectList(StringList):
 				sys.exit(0)
 			else:
 				StartBraceFound = True
-		if "Program" in line:
+				
+		if "CheckIfUserDownloadedProgram" in line:
+			CheckIfUserDownloadedProgram = ConvertStrToBool(
+				SplitLineAndGetIndexI(line, 1))
+			
+			if CheckIfUserDownloadedProgram is True:
+				ProgramString = CheckIfSimilarFileExists(
+					ProgramName, WorkingDirectory.GetDirectory())
+					
+				if len(ProgramString) == 0:
+					
+					if len(ProgramName) == 0:
+						print("Program should be the first tag in every {}")
+						print("Halting Execution")
+					else:
+						print("Program %s not found. " % (ProgramName))
+						print("You need to download it before running " +
+									"this program.")
+								
+					sys.exit(0)
+					
+				else:
+					ArchiveDirectory = ProgramString
+		elif "Program" in line:
 			ProgramName = SplitLineAndGetIndexI(line, 1)
 		elif "URL" in line:
 			Url = SplitLineAndGetIndexI(line, 1)
@@ -243,9 +269,10 @@ def MakeArchiveFileObjectList(StringList):
 			RenameFile = ConvertStrToBool(SplitLineAndGetIndexI(line, 1))
 		elif "ExtractedArchive" in line:
 			ArchiveDirectory = SplitLineAndGetIndexI(line, 1)
+				
 		elif "}" in line:
 			DownloableFilesObjectList.append(ArchivedFiles(
-				ProgramName=ProgramName,Url=Url, File=File,
+				ProgramName=ProgramName, Url=Url, File=File,
 				Hash=Hash, ArchiveDirectory=ArchiveDirectory,
 				RenameFile=RenameFile))
 			
